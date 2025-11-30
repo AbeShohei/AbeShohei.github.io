@@ -1,0 +1,28 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background: Dark Chip -->
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#050505" stroke="#1a1a2e" stroke-width="2"/>
+  
+  <!-- Cyber Accents (Corners) -->
+  <path d="M2 18 V10 A8 8 0 0 1 10 2 H18" stroke="#00f3ff" stroke-width="3" fill="none" filter="url(#glow)" opacity="0.8"/>
+  <path d="M62 46 V54 A8 8 0 0 1 54 62 H46" stroke="#ff00ff" stroke-width="3" fill="none" filter="url(#glow)" opacity="0.8"/>
+  
+  <!-- Glitch Text Effect "S" -->
+  <!-- Layer 1: Magenta Offset -->
+  <text x="34" y="44" font-family="monospace" font-weight="900" font-size="40" text-anchor="middle" fill="#ff00ff" opacity="0.7" style="mix-blend-mode: screen;">S</text>
+  
+  <!-- Layer 2: Cyan Main -->
+  <text x="30" y="44" font-family="monospace" font-weight="900" font-size="40" text-anchor="middle" fill="#00f3ff" filter="url(#glow)">S</text>
+  
+  <!-- Scanline Overlay -->
+  <path d="M2 15 H62 M2 30 H62 M2 45 H62" stroke="#ffffff" stroke-width="1" opacity="0.1"/>
+</svg>
