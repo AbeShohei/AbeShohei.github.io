@@ -49,7 +49,7 @@ export const PROJECTS: Project[] = [
     title: "UNIV_CIRCLE",
     description: "AI(Gemini)を活用した次世代サークル新歓プラットフォーム。自然言語マッチングや紹介文のAI推敲機能を搭載し、グラスモーフィズムと3Dアニメーションによる没入感のあるUIを提供。",
     tags: ["React", "Gemini API", "Tailwind", "Cloud Run"],
-    imageUrl: "/univ-circle.png",
+    imageUrl: "univ-circle.png",
     link: "https://univcircle-connect-1068348265766.us-west1.run.app/",
     status: 'ONLINE'
   },
@@ -58,7 +58,7 @@ export const PROJECTS: Project[] = [
     title: "LIVEE",
     description: "ライブハウスやフェスに通う熱狂的な音楽ファンのための統合アプリ。",
     tags: ["React", "Tailwind", "Gemini API", "Cloud Run"],
-    imageUrl: "/LIVEE.png",
+    imageUrl: "LIVEE.png",
     link: "https://livee-560980492248.us-west1.run.app/",
     status: 'ONLINE'
   }

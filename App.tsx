@@ -376,6 +376,12 @@ const App: React.FC = () => {
                       src={project.imageUrl} 
                       alt={project.title} 
                       className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500 transform group-hover:scale-105"
+                      onError={(e) => {
+                        // Fallback to thum.io screenshot if local image fails
+                        if (project.link && !e.currentTarget.src.includes('thum.io')) {
+                           e.currentTarget.src = `https://image.thum.io/get/width/600/crop/800/${project.link}`;
+                        }
+                      }}
                     />
                     <div className="absolute bottom-0 left-0 bg-cyber-black/80 px-2 py-1 text-[10px] text-cyber-primary border-t border-r border-cyber-primary z-20">
                       IMG_REF_{project.id}

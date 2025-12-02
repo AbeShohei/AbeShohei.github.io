@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 // --- CONFIGURATION ---
-const BOID_COUNT = 40; // 少し増やす
+const BOID_COUNT = 40;
 const NEIGHBOR_DIST = 10;
 const SPEED_LIMIT = 0.45;
 const TURN_SPEED = 0.04;
@@ -22,6 +22,10 @@ class Boid {
   acceleration: THREE.Vector3;
   color: number;
   offset: number; // For animation timing variance
+  
+  // Logic for Touch & Go interaction
+  contactTime: number = 0;
+  fleeTime: number = 0;
 
   constructor(scene: THREE.Scene, color: number) {
     this.color = color;
@@ -108,7 +112,7 @@ class Boid {
     scene.add(this.mesh);
   }
 
-  update(boids: Boid[], mousePos: THREE.Vector3, time: number, mode: InteractionMode) {
+  update(boids: Boid[], mousePos: THREE.Vector3, time: number, delta: number, mode: InteractionMode) {
     // --- FLOCKING RULES ---
     const alignment = new THREE.Vector3();
     const cohesion = new THREE.Vector3();
@@ -142,31 +146,61 @@ class Boid {
       this.acceleration.add(separation);
     }
 
+    // --- TIMERS ---
+    if (this.fleeTime > 0) {
+      this.fleeTime -= delta;
+    }
+
     // --- INTERACTION LOGIC (GATHER / SCATTER) ---
     const dirToMouse = new THREE.Vector3().subVectors(mousePos, this.mesh.position);
     const distToMouse = dirToMouse.length();
 
-    if (mode === 'GATHER') {
+    // Only gather if not in "fleeing" state
+    if (mode === 'GATHER' && this.fleeTime <= 0) {
       // Strong Attraction
       dirToMouse.normalize().multiplyScalar(0.08); // Stronger pull
       this.acceleration.add(dirToMouse);
+
+      // Check for contact (TOUCH & GO Logic)
+      if (distToMouse < 3.0) {
+        this.contactTime += delta;
+        
+        // If stayed near cursor for 0.1s, scatter away freely
+        if (this.contactTime > 0.1) {
+          this.fleeTime = 1.5; // Free flight for 1.5s
+          this.contactTime = 0;
+          
+          // Burst velocity in random direction
+          const burst = new THREE.Vector3(
+             (Math.random() - 0.5) * 2,
+             (Math.random() - 0.5) * 2,
+             (Math.random() - 0.5) * 2
+          ).normalize().multiplyScalar(SPEED_LIMIT * 3);
+          this.velocity.add(burst);
+        }
+      } else {
+        this.contactTime = 0;
+      }
+
     } else if (mode === 'SCATTER') {
       // Strong Repulsion (Fear)
       if (distToMouse < 25) {
         dirToMouse.normalize().multiplyScalar(-0.2); // Very strong push
         this.acceleration.add(dirToMouse);
       }
+      this.contactTime = 0;
     } else {
-      // Normal weak attraction
-      if (distToMouse < 40) {
+      // Normal weak attraction (only if not fleeing)
+      if (this.fleeTime <= 0 && distToMouse < 40) {
         dirToMouse.normalize().multiplyScalar(0.002);
         this.acceleration.add(dirToMouse);
       }
+      this.contactTime = 0;
     }
 
     // --- PHYSICS UPDATE ---
     this.velocity.add(this.acceleration);
-    this.velocity.clampLength(0, mode === 'SCATTER' ? SPEED_LIMIT * 2 : SPEED_LIMIT);
+    this.velocity.clampLength(0, mode === 'SCATTER' || this.fleeTime > 0 ? SPEED_LIMIT * 1.5 : SPEED_LIMIT);
     this.mesh.position.add(this.velocity);
     this.acceleration.set(0, 0, 0); 
 
@@ -420,7 +454,7 @@ const CyberBoids: React.FC = () => {
     const handleClick = () => {
         // Double click will trigger this too, but that's okay, dblclick event will override shortly after
         if (interactionModeRef.current !== 'SCATTER') {
-             setMode('GATHER', 3000);
+             setMode('GATHER', 4000); // Allow enough time for touch & go
         }
     };
 
@@ -438,11 +472,12 @@ const CyberBoids: React.FC = () => {
     const animate = () => {
       requestAnimationFrame(animate);
       
+      const delta = clock.getDelta(); // Get time since last frame
       const time = clock.getElapsedTime();
       
       // Update Boids
       boidsRef.current.forEach(boid => {
-        boid.update(boidsRef.current, mouseRef.current, time, interactionModeRef.current);
+        boid.update(boidsRef.current, mouseRef.current, time, delta, interactionModeRef.current);
       });
 
       // Update Leviathan
